@@ -1,0 +1,110 @@
+/* Stefans styling av inloggning och typografi */
+
+.sw-body {
+  color: #444;
+  background-color: rgba(5,5,0,0.02);
+  font: normal 112.5% / 1.65 serif;
+}
+
+.sw-body,
+.sw-paragraph,
+.sw-h1,
+.sw-h2,
+.sw-h3,
+.sw-h4,
+.sw-h5,
+.sw-h6,
+.sw-heading,
+.sw-regular,
+.sw-medium,
+.sw-large,
+.sw-xlarge {
+  -webkit-hyphens: auto;
+  -ms-hyphens: auto;
+  hyphens: auto;
+  word-wrap: break-word;
+  line-height: 1.45;
+  font-family: 'Open Sans', 'Source Sans Pro', 'Helvetica Neue', 'Gill Sans', Calibri, Helvetica, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+.sw-h1,
+.sw-h2,
+.sw-h3,
+.sw-h4,
+.sw-h5,
+.sw-h6,
+.sw-heading {
+  margin-top: 0;
+  letter-spacing: -1px;
+  font-weight: 100;
+}
+
+.sw-regular {
+  font-size: 1em;
+}
+
+.sw-medium {
+   font-size: 1.17em;
+}
+
+.sw-large {
+  font-size: 1.5em;
+}
+
+.sw-xlarge {
+  font-size: 2em;
+}
+
+.sw-centertext {
+  text-align: center;
+}
+
+.sw-logo {
+  background: url('../img/logo.png') center center no-repeat;
+  background-image: url('../img/logo.svg'), none;
+  background-size: 203px 43px;
+  margin-top: 20px;
+  height: 140px;
+  text-align: center;
+}
+
+.sw-logo h1 {
+  padding-top: 0px;
+}
+
+.sw-wrapper {
+  max-width: 32em;
+  padding: 2em;
+  margin: 0 auto
+}
+
+.sw-login {
+  margin-top: 50px;
+  display: inline-block;
+}
+
+.sw-login,
+.sw-login svg path {
+  -webkit-transition: all 0.3s ease-in;
+  transition: all 0.3s ease-in;
+  text-decoration: none;
+  color: #444;
+  fill: #444;
+  border: 1px solid rgba(0,0,0,0.1);
+  background: rgba(0,0,0,0.01);
+  padding: 20px 30px;
+  box-shadow: 2px 2px 20px rgba(0, 0, 0, 0.00);
+}
+
+.sw-login:hover,
+.sw-login:hover svg path {
+  -webkit-transition: all 0.3s ease-in;
+  transition: all 0.3s ease-in;
+  fill: #335876;
+  color: #335876;
+  cursor: pointer;
+  box-shadow: 2px 2px 20px rgba(0, 0, 0, 0.08);
+  border-color: white;
+  background-color: white;
+}
