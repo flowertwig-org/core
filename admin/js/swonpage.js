@@ -1,5 +1,6 @@
 /* global StaticWeb */
 (function (sw) {
+    /* https://jsfiddle.net/ybb7j5vj/ */
     function getOnPage() {
         var key = "sw.config.onPage.display";
         var value = sw.getSetting(key);
@@ -89,7 +90,7 @@
     navigation.className = 'sw-onpage-options-item sw-onpage-navigation-item';
     var navigationHeader = document.createElement('div');
     navigationHeader.className = 'sw-onpage-options-item-header'
-    navigationHeader.innerText = 'Navigation';
+    navigationHeader.innerText = 'Pages';
     var navigationList = document.createElement('div');
     navigationList.className = 'sw-onpage-options-item-content';
 

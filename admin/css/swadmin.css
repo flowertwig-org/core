@@ -45,6 +45,7 @@
     margin: 0 auto;
     z-index: 100000;  
     height: 100%;  
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .sw-onpage-options-items,
@@ -61,7 +62,8 @@
 }
 
 body.sw-onpage-options-show {
-    margin-left: 300px;
+    /* 300 + 8 + 3 */
+    margin-left: 311px;
 }
 
 body.sw-onpage-options-show .sw-onpage-options-items,

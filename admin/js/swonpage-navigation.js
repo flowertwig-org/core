@@ -158,42 +158,45 @@
         dialogContent.appendChild(pageNameElement);
 
         var templates = document.createElement('div');
-        templates.innerHTML = '<b style="display:block;padding:5px;padding-bottom:10px;padding-top:30px">Choose template to use:</b>loading page templates...';
+        templates.innerHTML = '<b style="display:block;padding:5px;padding-bottom:10px;padding-top:30px">Choose template to use:</b>loading page layout...';
         dialogContent.appendChild(templates);
 
         document.getElementsByTagName('body')[0].appendChild(dialog);
 
         var adminPath = sw.getAdminPath().replace(location.protocol + '//' + location.host, '');
-        sw.storage.list(adminPath + 'templates/page/', function (info, status) {
-            if (status.isOK) {
-                var list = arguments[0];
-                var elements = [];
-                elements.push('<b style="display:block;padding:5px;padding-bottom:10px;padding-top:30px">Choose template to use:</b>');
-                for (var i = 0; i < list.length; i++) {
-                    var isPreview = list[i].path.indexOf('.jpg') > 0 || list[i].path.indexOf('.jpeg') > 0 || list[i].path.indexOf('.png') > 0 || list[i].path.indexOf('.gif') > 0;
-                    if (isPreview) {
-                        var name = list[i].name.replace('.jpg', '').replace('.jpeg', '').replace('.png', '').replace('.gif', '');
-                        var path = list[i].path.replace('.jpg', '').replace('.jpeg', '').replace('.png', '').replace('.gif', '') + '.html';
-                        elements.push('<div class="sw-onpage-navigation-createpage-template" data-sw-onpage-createpage-template="' + path + '" style="margin:5px;padding:1px;width:250px;display:inline-block;background-color:#2F5575;color:#fff;vertical-align:top;border-radius:6px;"><b style="display:block;padding:4px">' + name + '</b><img src="' + list[i].path + '" width="100%" style="cursor:pointer" /></div>');
-
-                    }
-                }
-                templates.innerHTML = elements.join('');
-                templates.addEventListener('click', function (e) {
-                    var el = e.target.parentNode;
-                    if (el.classList.contains('sw-onpage-navigation-createpage-template')) {
-                        var inputName = document.getElementById('sw-onpage-createpage-name');
-                        var inputFolder = document.getElementById('sw-onpage-createpage-parent');
-                        var pageName = inputFolder.value + inputName.value + '/index.html';
-                        var templateLocation = el.getAttribute('data-sw-onpage-createpage-template');
-                        var resultAddress = getPath(pageName);
-                        sw.addPage(pageName, templateLocation, function () {
-                            dialogContent.innerHTML = "waiting for servers to empty cache, please wait";
-                            waitUntilReady(resultAddress);
-                        });
-                    }
-                });
+        sw.storage.list(adminPath + 'config/layouts/page/', function (info, status) {
+            var list = info;
+            if (!list || list.length === 0) {
+                templates.innerHTML = '<span>No page layouts found. Please add page layouts to: ' + adminPath + 'config/layouts/page/</span>';
+                return;
             }
+            var list = arguments[0];
+            var elements = [];
+            elements.push('<b style="display:block;padding:5px;padding-bottom:10px;padding-top:30px">Choose page layout to use:</b>');
+            for (var i = 0; i < list.length; i++) {
+                var isPreview = list[i].path.indexOf('.jpg') > 0 || list[i].path.indexOf('.jpeg') > 0 || list[i].path.indexOf('.png') > 0 || list[i].path.indexOf('.gif') > 0;
+                if (isPreview) {
+                    var name = list[i].name.replace('.jpg', '').replace('.jpeg', '').replace('.png', '').replace('.gif', '');
+                    var path = list[i].path.replace('.jpg', '').replace('.jpeg', '').replace('.png', '').replace('.gif', '') + '.html';
+                    elements.push('<div class="sw-onpage-navigation-createpage-template" data-sw-onpage-createpage-template="' + path + '" style="margin:5px;padding:1px;width:250px;display:inline-block;background-color:#2F5575;color:#fff;vertical-align:top;border-radius:6px;"><b style="display:block;padding:4px">' + name + '</b><img src="' + list[i].path + '" width="100%" style="cursor:pointer;background: url(https://placehold.it/300x300)" /></div>');
+
+                }
+            }
+            templates.innerHTML = elements.join('');
+            templates.addEventListener('click', function (e) {
+                var el = e.target.parentNode;
+                if (el.classList.contains('sw-onpage-navigation-createpage-template')) {
+                    var inputName = document.getElementById('sw-onpage-createpage-name');
+                    var inputFolder = document.getElementById('sw-onpage-createpage-parent');
+                    var pageName = inputFolder.value + inputName.value + '/index.html';
+                    var templateLocation = el.getAttribute('data-sw-onpage-createpage-template');
+                    var resultAddress = getPath(pageName);
+                    sw.addPage(pageName, templateLocation, function () {
+                        dialogContent.innerHTML = "waiting for servers to empty cache, please wait";
+                        waitUntilReady(resultAddress);
+                    });
+                }
+            });
         });
     }
 

@@ -85,14 +85,9 @@
         this.loadComponents(true);
 
         this.includeScript(adminPath + 'js/jStorage.js');
-        this.includeScript(adminPath + 'js/swconfig.js');
+        this.includeScript(adminPath + 'config/swconfig.js');
         self.ensureLoaded('storage', self.config, function () {
             // We have now loaded the StaticWeb config.
-
-            // If we should check permission, default to visitor until we know.
-            // if (self.config.permissions.check) {
-            //     self.permissionType = 'visitor';
-            // }
 
             self.ensureLoaded('jStorage', window, function () {
                 self.includeScript(adminPath + 'js/jStorage.' + self.config.storage.type + '.js');
@@ -146,7 +141,7 @@
     StaticWebDefinition.prototype.notifyComponentsOfStorageReady = function (storage, permissions) {
         var self = this;
 
-        if (!self.config.permissions || permissions.indexOf('admin') >= 0) {
+        if ((self.config.permissions && !self.config.permissions.check) || permissions.indexOf('admin') >= 0) {
         	self.loadAdminState(permissions);
         }
         
@@ -161,7 +156,6 @@
     StaticWebDefinition.prototype.loadAdminState = function (loggedIn) {
         var self = this;
         var adminPath = this.getAdminPath();
-        // this.loadComponents();
 
         if (loggedIn) {
             this.includeStyle(adminPath + 'css/swadmin.css');
@@ -350,7 +344,7 @@
         // and we want to be sure self.elements contains all of our types when component is loaded )
         for (var key in self.elements) {
             if (self.elements.hasOwnProperty(key)) {
-                self.includeScript(adminPath + 'js/components/' + key + '.js');
+                self.includeScript(adminPath + 'components/' + key + '.js');
             }
         }
     }
