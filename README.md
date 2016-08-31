@@ -1,4 +1,4 @@
-![Static Web](https://staticweb.azurewebsites.net/img/logo.png)
+<img src="https://staticwebcms.github.io/admin/img/logo.svg" width="300" alt="staticweb" aria-hidden="true" role="presentation" />
 
 # The gist
 Static Web is not your daddys CMS. It's a CMS that is totally static. Which
