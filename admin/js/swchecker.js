@@ -9,7 +9,25 @@
     }
     StaticWebDefinition.prototype = {
         init: function () {
-
+        },
+        retrieveTemplate: function(templateName, loadCallback, errorCallback) {
+          var link = document.createElement('link');
+          link.rel = 'import';
+          link.href = this.getAdminPath() + "templates/" + templateName + ".html";
+          //link.setAttribute('async', ''); // make it async!
+          link.onload = function() {
+            var templateElement = link.import.querySelector('sw-template');
+            var templateContent = templateElement.children[0];
+            loadCallback(templateContent);
+          };
+          link.onerror = errorCallback || alert;
+          document.head.appendChild(link);
+        },
+        insertTemplate: function(template, element) {
+          element.appendChild(template.cloneNode(true));
+        },
+        isUserLevel: function(level) {
+          return level === 'visitor';
         },
         hasLoggedInInfo: function () {
             var hasTokenInfo = localStorage.getItem('token') || (window.location.search.indexOf('token') >= 0 && window.location.search.indexOf('state') >= 0);

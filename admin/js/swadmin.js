@@ -19,19 +19,12 @@
 
         this.storage = false;
 
+        // load components that doesn't require permissions except 'visitor'
+        this.loadComponents();
+
         // Do we have a valid token?
         if (this.hasLoggedInInfo()) {
             this.loadLoggedInState();
-        }
-        else {
-            var link = document.getElementById('staticweb-login-link');
-            link.addEventListener('click', function (evt) {
-                evt.preventDefault();
-
-                var tmpState = 'staticweb-ts-' + new Date().getTime();
-                window.localStorage.setItem('jStorage.github.tokenState', tmpState);
-                window.location.assign(link.href.replace('stateKeyToVerifyToken', tmpState));
-            });
         }
     }
 
@@ -81,9 +74,6 @@
         var self = this;
         var adminPath = this.getAdminPath();
 
-        // load components that doesn't require permissions except 'visitor'
-        this.loadComponents(true);
-
         this.includeScript(adminPath + 'js/jStorage.js');
         this.includeScript(adminPath + 'config/swconfig.js');
         self.ensureLoaded('storage', self.config, function () {
@@ -96,8 +86,15 @@
                     jStorageConf.name = jStorageConf.type;
                     jStorageConf.callback = function (storage, callStatus) {
                         if (self.config.permissions.check) {
+                            // Only storages with support for permissions can
+                            // "checkPermissions". E.g: Github.
                             self.checkPermissions(storage, self.notifyComponentsOfStorageReady);
+                            self.loadComponents()
                         } else {
+                            // Storages that don't support permissions default
+                            // to requiring admin.
+                            self.permissionTypes = ["admin"];
+                            self.loadComponents()
                             self.notifyComponentsOfStorageReady(storage, self.permissionTypes);
                         }
                     };
@@ -105,6 +102,10 @@
                 });
             });
         });
+    }
+    StaticWebDefinition.prototype.isUserLevel = function(level) {
+      var self = this;
+      return ((self.config.permissions && !self.config.permissions.check) || self.permissionTypes.indexOf(level) >= 0)
     }
     StaticWebDefinition.prototype.checkPermissions = function (storage, callback) {
         var self = this;
@@ -141,10 +142,10 @@
     StaticWebDefinition.prototype.notifyComponentsOfStorageReady = function (storage, permissions) {
         var self = this;
 
-        if ((self.config.permissions && !self.config.permissions.check) || permissions.indexOf('admin') >= 0) {
+        if (self.isUserLevel('admin')) {
         	self.loadAdminState(permissions);
         }
-        
+
         var list = self.components;
         for (var compName in list) {
             var component = list[compName];
@@ -159,10 +160,6 @@
 
         if (loggedIn) {
             this.includeStyle(adminPath + 'css/swadmin.css');
-            if (self.inAdminPath()) {
-                self.showNavigation();
-                self.removeLogin();
-            }
             self.loadOnPage();
             self.config.storage.isReady = true;
         } else {
@@ -304,38 +301,47 @@
             this.includeScript(adminPath + 'js/swonpage.js');
         }
     }
-    StaticWebDefinition.prototype.loadComponents = function (checkPermission) {
+    StaticWebDefinition.prototype.componentPermitted = function (element) {
+      var self = this;
+      var componentPermissionType = 'admin';
+
+      // check if component have set required permission type
+      var componentPermRequireAttr = element.attributes['data-staticweb-perm-type'];
+      if (componentPermRequireAttr) {
+        componentPermissionType = componentPermRequireAttr.value;
+      }
+
+      // If component required permission isnt available, ignore it. BUT if it has specified 'visitor', automatically approve it.
+      var isVisitor = componentPermissionType === 'visitor';
+      var isPermitted = self.permissionTypes.indexOf(componentPermissionType) !== -1;
+      if ( isVisitor || isPermitted ) {
+        return true;
+      }
+      return false;
+    }
+    StaticWebDefinition.prototype.loadComponents = function () {
         var self = this;
         var adminPath = self.getAdminPath();
 
         // Find elements that should be created as components
-        var elements = document.getElementsByClassName('staticweb-component');
-        for (var index = 0; index < elements.length; index++) {
-            var element = elements[index];
-
-            if (checkPermission) {
-                var componentPermissionType = 'admin';
-
-                // check if component have set required permission type
-                var componentPermRequireAttr = element.attributes['data-staticweb-perm-type'];
-                if (componentPermRequireAttr) {
-                    componentPermissionType = componentPermRequireAttr.value;
-                }
-
-                // If component required permission isnt available, ignore it. BUT if it has specified 'visitor', automatically approve it.
-                if (componentPermissionType === 'visitor' || !self.permissionTypes.indexOf(componentPermissionType)) {
-                    continue;
-                }
+        var domElements = document.querySelectorAll('[data-staticweb-component]');
+        for (var index = 0; index < domElements.length; index++) {
+            var domElement = domElements[index];
+            if(!self.componentPermitted(domElement)) {
+              continue;
             }
 
-            var componentIdAttr = element.attributes['data-staticweb-component'];
+            var componentIdAttr = domElement.attributes['data-staticweb-component'];
             if (componentIdAttr) {
                 // If this is the first component of this type, create array
                 if (!self.elements[componentIdAttr.value]) {
-                    self.elements[componentIdAttr.value] = [];
+                    self.elements[componentIdAttr.value] = { loaded: false, instances: [] };
                 }
                 // add element to known elements for type
-                self.elements[componentIdAttr.value].push(element);
+                var componentInitialized = self.elements[componentIdAttr.value]["instances"].indexOf(domElement) !== -1;
+                if(!componentInitialized) {
+                  self.elements[componentIdAttr.value]["instances"].push(domElement);
+                }
             }
         }
 
@@ -343,7 +349,8 @@
         // We are waiting until we have gone through all elements because there can be multiple elements of same component type
         // and we want to be sure self.elements contains all of our types when component is loaded )
         for (var key in self.elements) {
-            if (self.elements.hasOwnProperty(key)) {
+            if (self.elements.hasOwnProperty(key) && !self.elements[key]["loaded"]) {
+                self.elements[key]["loaded"] = true;
                 self.includeScript(adminPath + 'components/' + key + '.js');
             }
         }
@@ -381,21 +388,6 @@
         // TODO: fix this so it has pure cross provider support.
         var token = localStorage.getItem('token');
         return this.sanitizeToken(token);
-    }
-
-    StaticWebDefinition.prototype.showNavigation = function () {
-        var nav = document.getElementsByClassName('navigation')[0];
-        nav.style.display = "block";
-    }
-
-    StaticWebDefinition.prototype.removeLogin = function () {
-        var mood = document.getElementsByClassName('mood')[0];
-        mood.className = "mood";
-
-        var callToAction = document.getElementsByClassName('call-to-action')[0];
-        if (callToAction) {
-            callToAction.remove();
-        }
     }
 
     w.StaticWebDefinition = StaticWebDefinition;
