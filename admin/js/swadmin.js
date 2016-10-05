@@ -1,4 +1,4 @@
-/* global jStorage */
+/* global freightCrane */
 (function (w, undefined) {
     "use strict";
 
@@ -29,7 +29,7 @@
                 evt.preventDefault();
 
                 var tmpState = 'staticweb-ts-' + new Date().getTime();
-                window.localStorage.setItem('jStorage.github.tokenState', tmpState);
+                window.localStorage.setItem('freightCrane.github.tokenState', tmpState);
                 window.location.assign(link.href.replace('stateKeyToVerifyToken', tmpState));
             });
         }
@@ -83,25 +83,25 @@
 
         // load components that doesn't require permissions except 'visitor'
         this.loadComponents(true);
-
-        this.includeScript(adminPath + 'js/jStorage.js');
+        freightCraneFolder = adminPath + 'node_modules/freightCrane/src/';
+        this.includeScript(freightCraneFolder + 'freightCrane.js');
         this.includeScript(adminPath + 'config/swconfig.js');
         self.ensureLoaded('storage', self.config, function () {
             // We have now loaded the StaticWeb config.
 
-            self.ensureLoaded('jStorage', window, function () {
-                self.includeScript(adminPath + 'js/jStorage.' + self.config.storage.type + '.js');
-                self.ensureLoaded(self.config.storage.type, jStorage.providers, function () {
-                    var jStorageConf = self.config.storage;
-                    jStorageConf.name = jStorageConf.type;
-                    jStorageConf.callback = function (storage, callStatus) {
+            self.ensureLoaded('freightCrane', window, function () {
+                self.includeScript(freightCraneFolder + 'freightCrane.' + self.config.storage.type + '.js');
+                self.ensureLoaded(self.config.storage.type, freightCrane.providers, function () {
+                    var freightCraneConf = self.config.storage;
+                    freightCraneConf.name = freightCraneConf.type;
+                    freightCraneConf.callback = function (storage, callStatus) {
                         if (self.config.permissions.check) {
                             self.checkPermissions(storage, self.notifyComponentsOfStorageReady);
                         } else {
                             self.notifyComponentsOfStorageReady(storage, self.permissionTypes);
                         }
                     };
-                    self.storage = jStorage(jStorageConf);
+                    self.storage = freightCrane(freightCraneConf);
                 });
             });
         });
@@ -144,7 +144,7 @@
         if ((self.config.permissions && !self.config.permissions.check) || permissions.indexOf('admin') >= 0) {
         	self.loadAdminState(permissions);
         }
-        
+
         var list = self.components;
         for (var compName in list) {
             var component = list[compName];
@@ -167,7 +167,7 @@
             self.config.storage.isReady = true;
         } else {
             alert('Ogiltigt personligt åtkomsttoken.');
-            // token from jStorage seems invalid, remove it and reload page.
+            // token from freightCrane seems invalid, remove it and reload page.
             localStorage.removeItem('token');
             location.reload();
         }

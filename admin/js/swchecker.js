@@ -1,4 +1,3 @@
-/* global jStorage */
 (function (w) {
     "use strict";
     var StaticWebDefinition = function () {
