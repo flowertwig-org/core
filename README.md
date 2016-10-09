@@ -8,7 +8,7 @@ other web based CMS-systems.
 
 Static Web is designed to be hosted either on Dropbox, Github or any other
 non-localStorage storage provider supported by
-https://github.com/flowertwig-org/jStorage. The key importance in those storage
+https://github.com/freightCrane/freightCrane. The key importance in those storage
 providers is the ability to have permissions and writing over an oAuth-based
 API. Github have full feature support since they also have Github Pages which
 allow the pages to be served on the internet.

@@ -1,0 +1,14 @@
+{
+  "name": "staticweb-admin",
+  "version": "0.1.0",
+  "description": "The Admin section of the Static Web CMS",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "freightCrane": "~0.3.0"
+  }
+}
