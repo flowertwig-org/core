@@ -1,0 +1,163 @@
+<sw-template>
+    <div>
+        <style>
+        .sw-onpage-page-create-dialog {
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background-color: #fff;
+                color: #000;
+                z-index: 1000000;
+                overflow-x: hidden;
+                overflow-y: scroll;
+                font-family: sans-serif;
+                line-height: 1.45;
+            }
+            
+            .sw-onpage-page-create-dialog-header {
+                padding: 5px 10px;
+                background-color: #2F5575;
+                color: #fff;
+                text-align: center;
+                font-weight: bold;
+            }
+            
+            .sw-onpage-dialog-close {
+                color: #fff;
+                text-decoration: none;
+                float: right;
+                /* to ensure bigger click area for touch devices */
+                padding: 0 10px;
+            }
+            
+            .sw-onpage-page-create-dialog-content {
+                padding: 10px;
+            }
+            
+            .sw-onpage-page-create-dialog-template {
+                margin: 5px;
+                padding: 1px;
+                width: 300px;
+                display: inline-block;
+                color: #fff;
+                vertical-align: top;
+                border-radius: 6px;
+                border: #2F5575 solid 1px;
+                color: #2F5575;
+                text-decoration: none;
+                cursor: pointer;
+            }
+            
+            .sw-onpage-page-create-dialog input[type=text] {
+                border-radius: 6px;
+                border: #2F5575 solid 1px;
+                line-height: 1.45;
+                padding: 2px 5px;
+            }
+            
+            .sw-onpage-page-create-dialog-content-templates input[type=radio] {
+                position: absolute;
+                top: -1000px;
+                left: -1000px;
+            }
+            
+            .sw-onpage-page-create-dialog-content-templates input[type=radio]:checked + .sw-onpage-page-create-dialog-template {
+                background-color: #2F5575;
+                color: #fff;
+                outline: none;
+            }
+            
+            .sw-onpage-page-create-dialog-template:hover,
+            .sw-onpage-page-create-dialog-template:active,
+            .sw-onpage-page-create-dialog-template:focus,
+            .sw-onpage-page-create-dialog-template:target {
+                background-color: #2F5575;
+                color: #fff;
+                outline: none;
+            }
+            
+            .sw-onpage-page-create-dialog-template b {
+                display: block;
+                padding: 4px
+            }
+            
+            .sw-onpage-page-create-dialog-template-preview {
+                position: relative;
+                width: 300px;
+                height: 300px;
+                overflow: hidden;
+            }
+            
+            .sw-onpage-page-create-dialog-template img {
+                cursor: pointer;
+                background-color: #fff;
+                height: 300px;
+                width: 300px;
+                border: 0;
+                pointer-events: none;
+            }
+            .sw-onpage-page-create-dialog-template iframe {
+                cursor: pointer;
+                background-color: #fff;
+                height: 1200px;
+                width: 1200px;
+                transform: scale(0.25);
+                transform-origin: left top;
+                border: 0;
+                pointer-events: none;
+                display:none;
+
+            }            
+            .sw-onpage-page-create-dialog-template img {
+                position: absolute;
+                left: 0;
+                top: 0;
+            }
+            
+            .sw-onpage-page-create-dialog-add-page {
+                float: right;
+            }
+        }
+        </style>
+        <sw-dialog>
+            <div class="sw-onpage-page-create-dialog">
+                <div class="sw-onpage-page-create-dialog-header">
+                    StaticWeb - Create new page<a href="#close" title="Close dialog" class="sw-onpage-dialog-close">x</a>
+                </div>
+                <div class="sw-onpage-page-create-dialog-content">
+                    <div>
+                        <b>Page name:</b>
+                        <input id="sw-onpage-page-create-dialog-parent" type="hidden" value="" />
+                        <input id="sw-onpage-page-create-dialog-name" type="text" value="" autofocus />
+                    </div>
+                    <div>
+                        <b>Page url:</b>
+                        <span id="sw-onpage-page-create-dialog-parent-url"></span>
+                        <input id="sw-onpage-page-create-dialog-url" type="text" value="" />
+                    </div>
+                    <div>
+                        <b>Choose template to use:</b>
+                    </div>
+                    <div class="sw-onpage-page-create-dialog-content-templates">
+                        loading page layout...
+                    </div>
+                    <a class="sw-onpage-page-create-dialog-add-page" href="#create-page">Create page</a>
+                </div>
+            </div>
+        </sw-dialog>
+        <sw-template-item>
+            <div style="display:inline-block">
+                <input tabindex="-1" type="radio" name="sw-onpage-page-create-dialog-template" id="sw-onpage-page-create-dialog-template-0">
+                <label tabindex="0" for="sw-onpage-page-create-dialog-template-0" class="sw-onpage-page-create-dialog-template">
+                <b>Template name</b>
+                <div class="sw-onpage-page-create-dialog-template-preview">
+                    <img src="/admin/config/layouts/page/ExampleLayout1.jpg" width="100%">
+                    <iframe tabindex="-1" scrolling="no" sandbox="allow-same-origin" src="about:blank" width="100%"></iframe>
+                </div>
+            </label>
+            </div>
+        </sw-template-item>
+    </div>
+</sw-template>

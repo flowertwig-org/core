@@ -14,7 +14,6 @@
         this.config = {};
         // all loaded components should store themself here.
         this.components = {};
-        this.elements = {};
         this.permissionTypes = ['visitor'];
 
         this.storage = false;
@@ -60,6 +59,70 @@
             return value;
         }
     }
+    StaticWebDefinition.prototype.hasHtmlImportSupport = function (callback) {
+        var hasNativeSupport = 'import' in document.createElement('link');
+        return hasNativeSupport;
+    }
+    StaticWebDefinition.prototype.ensureHtmlImportSupport = function (callback) {
+        var self = this;
+        if (self.hasHtmlImportSupport()) {
+            callback();
+        } else {
+            var adminPath = this.getAdminPath();
+
+            var webcomponentsFolder = adminPath + 'bower_components/webcomponentsjs/';
+            self.includeScript(webcomponentsFolder + 'HTMLImports.min.js');
+            self.ensureLoaded('HTMLImports', window, function () {
+                // we should have HTML Imports support now, continue...
+                callback();
+            });
+        }
+    }
+    StaticWebDefinition.prototype.retrieveTemplate = function (templateName, loadCallback, errorCallback) {
+        var self = this;
+
+        self._htmlImportPolyfill = self._htmlImportPolyfill || false;
+
+        if (!self.hasHtmlImportSupport() && !self._htmlImportPolyfill) {
+            // browser doesn't support HTML Imports, try load polyfill
+            self.ensureHtmlImportSupport(function() {
+
+                self._htmlImportPolyfill = true;
+
+                self.retrieveTemplate(templateName, loadCallback, errorCallback);
+            });
+            return;
+        }
+
+        var templateId = 'template-' + templateName;
+        var link = document.querySelector('#' + templateId);
+
+        // have we loaded template already?
+        if (link) {
+            var templateElement = link.import.querySelector('sw-template');
+            var templateContent = templateElement.children[0];
+            loadCallback(templateContent);
+        } else {
+            var link = document.createElement('link');
+            link.id = templateId;
+            link.rel = 'import';
+            link.href = this.getAdminPath() + "templates/" + templateName + ".html";
+            //link.setAttribute('async', ''); // make it async!
+            link.onload = function () {
+                var templateElement = link.import.querySelector('sw-template');
+                var templateContent = templateElement.children[0];
+                loadCallback(templateContent);
+            };
+            link.onerror = errorCallback || alert;
+            document.head.appendChild(link);
+        }
+    }
+    StaticWebDefinition.prototype.insertTemplate = function (template, element) {
+        element.appendChild(template.cloneNode(true));
+    }
+    StaticWebDefinition.prototype.isUserLevel = function (level) {
+        return level === 'visitor';
+    }
 
     StaticWebDefinition.prototype.includeStyle = function (addr) {
         var link = document.createElement('link');
@@ -86,6 +149,7 @@
                     var freightCraneConf = self.config.storage;
                     freightCraneConf.name = freightCraneConf.type;
                     freightCraneConf.callback = function (storage, callStatus) {
+                        self.storage = storage;
                         if (self.config.permissions.check) {
                             // Only storages with support for permissions can
                             // "checkPermissions". E.g: Github.
@@ -99,14 +163,14 @@
                             self.notifyComponentsOfStorageReady(storage, self.permissionTypes);
                         }
                     };
-                    self.storage = freightCrane(freightCraneConf);
+                    freightCrane(freightCraneConf);
                 });
             });
         });
     }
-    StaticWebDefinition.prototype.isUserLevel = function(level) {
-      var self = this;
-      return ((self.config.permissions && !self.config.permissions.check) || self.permissionTypes.indexOf(level) >= 0)
+    StaticWebDefinition.prototype.isUserLevel = function (level) {
+        var self = this;
+        return ((self.config.permissions && !self.config.permissions.check) || self.permissionTypes.indexOf(level) >= 0)
     }
     StaticWebDefinition.prototype.checkPermissions = function (storage, callback) {
         var self = this;
@@ -144,14 +208,16 @@
         var self = this;
 
         if (self.isUserLevel('admin')) {
-        	self.loadAdminState(permissions);
+            self.loadAdminState(permissions);
         }
 
-        var list = self.components;
-        for (var compName in list) {
-            var component = list[compName];
-            if ('onStorageReady' in component) {
-                component.onStorageReady(storage, permissions);
+        for (var compName in self.components) {
+            var component = self.components[compName];
+            for (var index = 0; index < component.instances.length; index++) {
+                var instance = component.instances[index];
+                if ('onStorageReady' in instance) {
+                    instance.onStorageReady(storage, permissions);
+                }
             }
         }
     }
@@ -160,8 +226,6 @@
         var adminPath = this.getAdminPath();
 
         if (loggedIn) {
-            this.includeStyle(adminPath + 'css/swadmin.css');
-            self.loadOnPage();
             self.config.storage.isReady = true;
         } else {
             alert('Ogiltigt personligt åtkomsttoken.');
@@ -294,31 +358,45 @@
             }
         })
     }
-    StaticWebDefinition.prototype.loadOnPage = function () {
-        var self = this;
-        var adminPath = self.getAdminPath();
-
-        if (this.config.onPage && this.config.onPage.display !== 'no') {
-            this.includeScript(adminPath + 'js/swonpage.js');
-        }
-    }
     StaticWebDefinition.prototype.componentPermitted = function (element) {
-      var self = this;
-      var componentPermissionType = 'admin';
+        var self = this;
+        var componentPermissionType = 'admin';
 
-      // check if component have set required permission type
-      var componentPermRequireAttr = element.attributes['data-staticweb-perm-type'];
-      if (componentPermRequireAttr) {
-        componentPermissionType = componentPermRequireAttr.value;
-      }
+        // check if component have set required permission type
+        var componentPermRequireAttr = element.attributes['data-staticweb-perm-type'];
+        if (componentPermRequireAttr) {
+            componentPermissionType = componentPermRequireAttr.value;
+        }
 
-      // If component required permission isnt available, ignore it. BUT if it has specified 'visitor', automatically approve it.
-      var isVisitor = componentPermissionType === 'visitor';
-      var isPermitted = self.permissionTypes.indexOf(componentPermissionType) !== -1;
-      if ( isVisitor || isPermitted ) {
-        return true;
-      }
-      return false;
+        // If component required permission isnt available, ignore it. BUT if it has specified 'visitor', automatically approve it.
+        var isVisitor = componentPermissionType === 'visitor';
+        var isPermitted = self.permissionTypes.indexOf(componentPermissionType) !== -1;
+        if (isVisitor || isPermitted) {
+            return true;
+        }
+        return false;
+    }
+    StaticWebDefinition.prototype.initComponent = function (element, componentName, attributes) {
+        var component = document.createElement('div');
+        component.setAttribute('data-staticweb-component', componentName);
+        var hasId = component.id;
+        if (!hasId) {
+            component.id = 'sw-' + new Date().getTime();
+        }
+        if (attributes) {
+            for (var name in attributes) {
+                component.setAttribute(name, attributes[name]);
+            }
+        }
+        element.appendChild(component);
+        this.loadComponents();
+    }
+    StaticWebDefinition.prototype.registerComponent = function (componentName, component) {
+        if (this.components[componentName]) {
+            this.components[componentName].definition = component;
+            this.components[componentName].registered = true;
+        }
+        this.loadComponents();
     }
     StaticWebDefinition.prototype.loadComponents = function () {
         var self = this;
@@ -328,20 +406,34 @@
         var domElements = document.querySelectorAll('[data-staticweb-component]');
         for (var index = 0; index < domElements.length; index++) {
             var domElement = domElements[index];
-            if(!self.componentPermitted(domElement)) {
-              continue;
+            if (!self.componentPermitted(domElement)) {
+                continue;
             }
 
-            var componentIdAttr = domElement.attributes['data-staticweb-component'];
-            if (componentIdAttr) {
+            var componentTypeName = domElement.getAttribute('data-staticweb-component');
+            if (componentTypeName) {
+                var component = self.components[componentTypeName];
                 // If this is the first component of this type, create array
-                if (!self.elements[componentIdAttr.value]) {
-                    self.elements[componentIdAttr.value] = { loaded: false, instances: [] };
+                if (!component) {
+                    component = self.components[componentTypeName] = {
+                        loaded: false,
+                        registered: false,
+                        instances: [],
+                        elements: [],
+                        definition: false
+                    };
                 }
-                // add element to known elements for type
-                var componentInitialized = self.elements[componentIdAttr.value]["instances"].indexOf(domElement) !== -1;
-                if(!componentInitialized) {
-                  self.elements[componentIdAttr.value]["instances"].push(domElement);
+
+                // component definition has been loaded and is ready to use, init on element.
+                if (component.loaded && component.registered) {
+                    // add element to known elements for type
+                    var componentInitialized = component.elements.indexOf(domElement) !== -1;
+                    if (!componentInitialized) {
+                        // add element
+                        component.elements.push(domElement);
+                        // create instance
+                        component.instances.push(new component.definition(domElement));
+                    }
                 }
             }
         }
@@ -349,21 +441,15 @@
         // Load all components we have found
         // We are waiting until we have gone through all elements because there can be multiple elements of same component type
         // and we want to be sure self.elements contains all of our types when component is loaded )
-        for (var key in self.elements) {
-            if (self.elements.hasOwnProperty(key) && !self.elements[key]["loaded"]) {
-                self.elements[key]["loaded"] = true;
+        for (var key in self.components) {
+            var isLoaded = self.components[key].loaded;
+            var isRegistered = self.components[key].registered;
+            if (!isLoaded || !isRegistered) {
+                // javascript component has not been loaded or registered, load it (If it is still not registered, component is broken).
+                self.components[key].loaded = true;
                 self.includeScript(adminPath + 'components/' + key + '.js');
             }
         }
-    }
-    StaticWebDefinition.prototype.writeCookie = function (name, value, days) {
-        var expires = "";
-        if (days) {
-            var date = new Date();
-            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-            expires = "; expires=" + date.toGMTString();
-        }
-        document.cookie = name + "=" + value + expires + "; path=/";
     }
     StaticWebDefinition.prototype.ensureLoaded = function (name, container, callback) {
         var self = this;

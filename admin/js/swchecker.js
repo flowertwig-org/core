@@ -1,3 +1,6 @@
+/*****
+ * This file is responsible for checking if StaticWeb should be loaded.
+ *****/
 (function (w) {
     "use strict";
     var StaticWebDefinition = function () {
@@ -9,28 +12,12 @@
     StaticWebDefinition.prototype = {
         init: function () {
         },
-        retrieveTemplate: function(templateName, loadCallback, errorCallback) {
-          var link = document.createElement('link');
-          link.rel = 'import';
-          link.href = this.getAdminPath() + "templates/" + templateName + ".html";
-          //link.setAttribute('async', ''); // make it async!
-          link.onload = function() {
-            var templateElement = link.import.querySelector('sw-template');
-            var templateContent = templateElement.children[0];
-            loadCallback(templateContent);
-          };
-          link.onerror = errorCallback || alert;
-          document.head.appendChild(link);
-        },
-        insertTemplate: function(template, element) {
-          element.appendChild(template.cloneNode(true));
-        },
-        isUserLevel: function(level) {
-          return level === 'visitor';
-        },
         hasLoggedInInfo: function () {
             var hasTokenInfo = localStorage.getItem('token') || (window.location.search.indexOf('token') >= 0 && window.location.search.indexOf('state') >= 0);
             return hasTokenInfo;
+        },
+        hasVisitorComponents: function () {
+            return !!document.querySelector('[data-staticweb-perm-type="visitor"]');
         },
         inAdminPath: function () {
             return location.toString().indexOf(StaticWeb.getAdminPath()) !== -1;
@@ -68,8 +55,8 @@
 })(window);
 
 (function (staticWeb) {
-    var hasLoginLink = !!document.getElementById('staticweb-login-link');
-    if (hasLoginLink || staticWeb.hasLoggedInInfo() || staticWeb.inAdminPath()) {
+    var hasVisitorComponent = staticWeb.hasVisitorComponents();
+    if (hasVisitorComponent || staticWeb.hasLoggedInInfo()) {
         var path = staticWeb.getAdminPath();
         // Load admin script(s)
         staticWeb.includeScript(path + 'js/swadmin.js');
