@@ -1,0 +1,147 @@
+<sw-template>
+    <div>
+        <style>
+            .sw-expandable-checkbox {
+                position: absolute;
+                left: -1000px;
+                top: -1000px;
+            }
+            
+            .sw-panel-header {
+                padding: 5px 10px;
+                background-color: #2F5575;
+                color: #fff;
+                text-align: center;
+                font-weight: bold;
+            }
+            
+            .sw-panel-dragdown {
+                position: absolute;
+                right: -27px;
+                top: 0;
+                display: inline-block;
+                cursor: pointer;
+                border-top: 0px;
+                font-weight: bold;
+                background-color: #2F5575;
+                color: #fff;
+                border-radius: 0 0 6px 0;
+                text-align: center;
+            }
+            
+            .sw-panel-dragdown label {
+                cursor: pointer;
+                padding: 5px 10px;
+                display: block;
+            }
+            
+            .sw-panel-left {
+                position: fixed;
+                top: 0px;
+                left: -300px;
+                margin: 0 auto;
+                z-index: 100000;
+                height: 100%;
+                width: 300px;
+                font-family: sans-serif;
+                line-height: 1.45;
+            }
+            
+            #sw-panel-left-checkbox ~ .sw-panel-left .sw-panel-dragdown label:before {
+                content: '+';
+            }
+            
+            #sw-panel-left-checkbox:checked ~ .sw-panel-left .sw-panel-dragdown {
+                right: 0;
+            }
+            
+            #sw-panel-left-checkbox:checked ~ .sw-panel-left .sw-panel-dragdown label:before {
+                content: '-';
+            }
+            
+            #sw-panel-left-checkbox:checked ~ .sw-panel-left {
+                left: 0;
+                border-right: solid 3px rgb(47, 85, 117);
+                background-color: #fff;
+
+                /* Make sure the options are scrollable if needed */
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+            
+            #sw-panel-left-checkbox ~ .sw-panel-left .sw-panel-content-list {
+                display: none;
+            }
+            
+            #sw-panel-left-checkbox:checked ~ .sw-panel-left .sw-panel-content-list {
+                display: block;
+            }
+            
+            .sw-panel-content-list {
+                padding: 0;
+                margin: 0;
+            }
+            
+            .sw-panel-list-item-icon {
+                float: right;
+                padding: 5px 10px;
+            }
+            
+            .sw-panel-list-item-title {
+                padding: 5px 10px;
+            }
+            
+            .sw-panel-list-item {
+                list-style-type: none;
+                border-bottom: solid 3px rgb(47, 85, 117);
+            }
+            
+            .sw-panel-list-item-header,
+            .sw-panel-list-item-header label {
+                cursor: pointer;
+            }
+            
+            .sw-panel-list-item-checkbox ~ .sw-panel-list-item-header label .sw-panel-list-item-icon:before {
+                content: '+';
+            }
+            
+            .sw-panel-list-item-checkbox:checked ~ .sw-panel-list-item-header label .sw-panel-list-item-icon:before {
+                content: '-';
+            }
+            
+            .sw-panel-list-item-checkbox:checked ~ .sw-panel-list-item-header {}
+            
+            .sw-panel-list-item-checkbox ~ .sw-panel-list-item-content {
+                display: none;
+            }
+            
+            .sw-panel-list-item-checkbox:checked ~ .sw-panel-list-item-content {
+                display: block;
+                border-top: 3px solid rgb(47, 85, 117);
+                padding-top: 5px;
+                margin-left: 10px;
+                margin-right: 10px;
+                margin-bottom: 5px;
+            }
+        </style>
+        <input type="checkbox" id="sw-panel-left-checkbox" class="sw-expandable-checkbox">
+        <div class="sw-panel-left">
+            <div class="sw-panel-header">StaticWeb</div>
+            <div class="sw-panel-dragdown"><label for="sw-panel-left-checkbox"></label></div>
+            <ul class="sw-panel-content-list">
+                <li class="sw-panel-list-item">
+                    <input type="checkbox" id="sw-panel-list-item-pages-checkbox" class="sw-expandable-checkbox sw-panel-list-item-checkbox">
+                    <div class="sw-panel-list-item-header">
+                        <label for="sw-panel-list-item-pages-checkbox">
+                            <span class="sw-panel-list-item-icon"></span>
+                            <div class="sw-panel-list-item-title">Pages</div>
+                        </label>
+                    </div>
+                    <div class="sw-panel-list-item-content">
+                        <div data-staticweb-component="sw-onpage-options-pages"></div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</sw-template>

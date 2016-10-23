@@ -1,0 +1,69 @@
+<sw-template>
+    <div>
+        <sw-page-head>
+            <style>
+                .sw-onpage-navigation-items {
+                    list-style: none;
+                    padding-left: 1em;
+                }
+                
+                .sw-onpage-navigation-item-link {
+                    color: #2F5575;
+                    text-decoration: none;
+                    min-width: 20px;
+                    display: inline-block;
+                    text-align: center;
+                }
+                
+                .sw-onpage-navigation-item-link:hover {
+                    text-decoration: underline;
+                }
+                
+                .sw-onpage-navigation-item-add {
+                    color: green;
+                    text-decoration: none;
+                    padding: 0 4px;
+                    border: green solid 1px;
+                    border-radius: 50%;
+                    padding-bottom: 2px;
+                    font-size: 0.75em;
+                    vertical-align: text-bottom;
+                }
+                
+                .sw-onpage-navigation-item-add:hover {
+                    background-color: green;
+                    color: #fff;
+                }
+                
+                .sw-onpage-navigation-item-delete {
+                    color: red;
+                    text-decoration: none;
+                    padding: 0 4px;
+                    border: red solid 1px;
+                    border-radius: 50%;
+                    padding-bottom: 2px;
+                    font-size: 0.75em;
+                    vertical-align: text-bottom;
+                }
+                
+                .sw-onpage-navigation-item-delete:hover {
+                    background-color: red;
+                    color: #fff;
+                }
+            </style>
+        </sw-page-head>
+        <sw-root>
+            <ul class="sw-onpage-navigation-items"></ul>
+        </sw-root>
+        <sw-item>
+            <li title="/" data-sw-nav-item-path="/">
+                <span>
+                    <a href="/index.html" class="sw-onpage-navigation-item-link">/</a>
+                    <a href="#" title="Delete &nbsp;/" class="sw-onpage-navigation-item-delete">x</a>
+                    <a href="#" title="Add a sub-page for &nbsp;/" class="sw-onpage-navigation-item-add">+</a>
+                </span>
+                <sw-item-children-placeholder></sw-item-children-placeholder>
+            </li>
+        </sw-item>
+    </div>
+</sw-template>

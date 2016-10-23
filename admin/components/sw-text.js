@@ -1,24 +1,25 @@
 /* global tinymce */
 (function (staticWeb) {
     "use strict";
-    var Text = function () {
+    var Text = function (element) {
         if (!(this instanceof Text)) {
-            return new Text();
+            return new Text(element);
         }
 
-        return this.init();
+        return this.init(element);
     }
     Text.prototype = {
         createInterface: function () {
             var self = this;
-            staticWeb.includeScript("//cdn.tinymce.com/4/tinymce.min.js");
+            if (self._loaded) {
+                return;
+            }
+            self._loaded = true;
+            staticWeb.includeScript("https://cdn.tinymce.com/4/tinymce.min.js");
             staticWeb.ensureLoaded('tinymce', window, function () {
-                var elements = staticWeb.elements['swtext'];
-                for (var index = 0; index < elements.length; index++) {
-                    var element = elements[index];
                     // TODO: see if element in question have a 'data-staticweb-component-swtext-data' attribute and use that for the toolbar options
                     tinymce.init({
-                        selector: '#' + element.id,
+                        selector: '#' + self._element.id,
                         inline: true,
                         menubar: false,
                         browser_spellcheck: true,
@@ -26,7 +27,6 @@
                         toolbar: "save | bold italic | bullist numlist outdent indent | link image | undo redo",
                         save_onsavecallback: self.save
                     });
-                }
             });
         },
         onStorageReady: function (storage, permissions) {
@@ -35,7 +35,6 @@
                 self.createInterface();
             }
         },
-        
         save: function (editor) {
             if (editor && editor.startContent) {
                 var resourceName = location.pathname.substring(1);
@@ -49,9 +48,15 @@
                 staticWeb.updatePage(container.id, container.tagName, resourceName, content);
             }
         },
-        init: function () {
+        init: function (element) {
             var self = this;
+            self._element = element;
+            self._loaded = false;
+            if (staticWeb.storage) {
+                self.createInterface();
+            }
         }
     }
-    staticWeb.components.swText = new Text();
+    staticWeb.registerComponent('sw-text', Text);
+
 })(window.StaticWeb);
